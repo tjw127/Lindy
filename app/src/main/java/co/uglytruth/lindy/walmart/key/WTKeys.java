@@ -13,4 +13,6 @@ public class WTKeys {
     public final static String search = "search";
 
     public final static String taxonomyIntent = "taxonomy";
+
+    public final static String searchJsonResults = "searchJsonResults";
 }

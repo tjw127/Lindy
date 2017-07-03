@@ -13,11 +13,11 @@ import co.uglytruth.lindy.walmart.response.WTSearchResponse;
 
 public class WTItems {
 
-    public static WTSearch.Items[] mergeItems(HashMap<Integer, String> aItemsHashmap)
+    public static WTSearch.Items[] mergeItems(Set<String> aJsonString)
     {
 
 
-        Set<Integer> itemInteger =  aItemsHashmap.keySet();
+        Set<String> itemsSet =  aJsonString;
 
         int totalItemInt = 0;
 
@@ -26,9 +26,9 @@ public class WTItems {
         ArrayList<WTSearch.Items> itemsList = new ArrayList<WTSearch.Items>();
 
 
-        for (Integer itemInt : itemInteger)
+        for (String itemJson : itemsSet)
         {
-            WTSearch search =  WTSearchResponse.getResults(aItemsHashmap.get(itemInt));
+            WTSearch search =  WTSearchResponse.getResults(itemJson);
 
             WTSearch.Items[] itemArray = search.items;
 

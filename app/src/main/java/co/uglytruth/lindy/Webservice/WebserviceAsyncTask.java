@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -186,6 +188,8 @@ public class WebserviceAsyncTask {
                         if (finalContext != null) {
 
                             Intent intent = new Intent("Search_BroadCast");
+
+                            Log.v("Scroll down", " webservice "  + aResult.getResult());
 
                             intent.putExtra("search", aResult.getResult());
 

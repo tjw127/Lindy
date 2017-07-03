@@ -6,5 +6,5 @@ package co.uglytruth.lindy.base;
 
 public class Base {
 
-    public static String baseUrl = "http://Intellji_war_exploded";
+    public static String baseUrl = "http:///Intellji_war_exploded";
 }
