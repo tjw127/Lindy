@@ -14,6 +14,12 @@ public class WTSearchUpdateUI implements Runnable {
 
     private boolean isAdapterNull;
 
+    private WTSearch.Items[] items;
+
+    private RecyclerView recyclerView;
+
+    private Context context;
+
     public static class Builder{
 
         private WalmartAdapter.WTAdapter adapter;
@@ -92,6 +98,7 @@ public class WTSearchUpdateUI implements Runnable {
                 this.isAdapterNull = true;
 
                 e.printStackTrace();
+
             }finally {
 
 
@@ -99,11 +106,13 @@ public class WTSearchUpdateUI implements Runnable {
                 {
                     case "true":
 
-                        WalmartAdapter adapter = new WalmartAdapter();
+                        this.context = builder.context;
 
-                        WalmartAdapter.WTAdapter wtAdapter = adapter.getAdapter(builder.items, builder.context);
+                        this.items = builder.items;
 
-                        builder.recyclerView.setAdapter(wtAdapter);
+                        this.recyclerView = builder.recyclerView;
+
+                        run();
 
                         break;
 
@@ -124,5 +133,10 @@ public class WTSearchUpdateUI implements Runnable {
     @Override
     public void run() {
 
+        WalmartAdapter adapter = new WalmartAdapter();
+
+        WalmartAdapter.WTAdapter wtAdapter = adapter.getAdapter(this.items, this.context);
+
+        this.recyclerView.setAdapter(wtAdapter);
     }
 }
