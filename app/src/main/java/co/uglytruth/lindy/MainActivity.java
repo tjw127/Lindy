@@ -41,10 +41,14 @@ import co.uglytruth.lindy.walmart.items.WTItems;
 import co.uglytruth.lindy.walmart.key.WTKeys;
 import co.uglytruth.lindy.walmart.response.WTSearchResponse;
 import co.uglytruth.lindy.walmart.response.WTTaxonomyResponse;
+import co.uglytruth.lindy.walmart.service.WTSearchAddService;
 import co.uglytruth.lindy.walmart.service.WTSearchService;
 import co.uglytruth.lindy.walmart.start.WTStartTracking;
+import co.uglytruth.lindy.walmart.tag.WTActivityResultTags;
+import co.uglytruth.lindy.walmart.update.WTSearchUpdateUI;
+import co.uglytruth.lindy.walmart.update.WTSearchUpdateUIInterface;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements WTSearchUpdateUIInterface{
 
     private RecyclerView walmartRecyclerView;
 
@@ -73,6 +77,10 @@ public class MainActivity extends AppCompatActivity {
     private HashMap<Integer, Integer> itemsState; //keep track of when to trigger delete or insert new items
 
     private Intent wtSearchServiceIntent;
+
+    private Intent wtSearchAddServiceIntent;
+
+    private Intent wtDeleteServiceIntent;
 
     private int visibleChildCount, pastVisibleChildCount, totalChildCount, lastVisibleChildPosition, completeVisibleChildFirstPosition, completeVisibleChildLastPosition;
 
@@ -136,16 +144,13 @@ public class MainActivity extends AppCompatActivity {
 
             currentStartInt++;
 
-
-
-
             final Integer start = new Integer(currentStartInt);
 
 
 
 
 
-            wtSearchServiceIntent.putExtra("currentStartInt", currentStartInt);
+            wtSearchServiceIntent.putExtra(WTKeys.currentStartInt, currentStartInt);
 
             context.startService(wtSearchServiceIntent);
 
@@ -163,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            /*
 
             String search = intent.getStringExtra(WTKeys.search);
 
@@ -282,6 +288,16 @@ public class MainActivity extends AppCompatActivity {
 
             walmartRecyclerView.setAdapter(wtAdapter);
             progressDialog.cancel();
+
+            */
+           // Intent intent1 = new Intent("co.uglytruth.lindy.MainActivity");
+
+            //intent1.setPackage("co.uglytruth.lindy.MainActivity");
+
+            updateUI(walmartRecyclerView, sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>()), getApplicationContext());
+            //MainActivity.this.setResult(WTActivityResultTags.WTSearch_Result_Status_OK.getRequestCode());
+
+            //startActivityForResult(intent1, WTActivityResultTags.WTSearch_Result_Status_OK.getRequestCode());
         }
     };
 
@@ -324,6 +340,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         wtSearchServiceIntent = new Intent(this, WTSearchService.class);
+
+        wtSearchAddServiceIntent = new Intent(this, WTSearchAddService.class);
 
 
 
@@ -381,11 +399,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.v("pastVisibleChildCount", " " + pastVisibleChildCount);
 
 
+
                 Integer lastChild = new Integer(pastVisibleChildCount);
 
-                Integer start = new Integer(wtSearch.start);
+                //Integer start = new Integer(wtSearch.start);
 
-                currentStartInt = start.intValue();
+               // currentStartInt = start.intValue();
 
                 int itemPosition = (pastVisibleChildCount + 1);
 
@@ -408,21 +427,41 @@ public class MainActivity extends AppCompatActivity {
 
                             if (!itemsState.containsKey(lastChild)) {
 
-                                int startInt = start.intValue();
+                               // int startInt = start.intValue();
 
-                                int newStart = startInt++;
+                                //int newStart = startInt++;
 
-                                itemsState.put(lastChild, new Integer(newStart));
+                               // itemsState.put(lastChild, new Integer(newStart));
 
                                 //Insert new (Search Collection) items
 
-                                Intent intent = new Intent("Add_Search_Broadcast_Receiver");
+                                //Intent intent = new Intent("Add_Search_Broadcast_Receiver");
 
-                                //context.sendBroadcast(intent);
+                                Set<String> stringSet =  sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>());
 
-                                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+                                String currentKey = sharedPreferences.getString(WTKeys.currentStartKey, "");
 
-                               Set<String> stringSet =  sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>());
+
+                                if (stringSet.size() < 2) {
+
+                                    Intent intent = new Intent(context, WTSearchAddService.class);
+
+                                    Log.v("WTSearchAddService", " " + currentKey);
+
+                                    if (currentKey.length() > 0) {
+
+                                        intent.putExtra("currentStartInt", new Integer(currentKey).intValue());
+
+                                    }
+                                    //context.sendBroadcast(intent);
+
+                                    context.startService(intent);
+
+                                }
+
+                                //LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+
+
 
                                 Log.v("Scroll down ", " Add_Search_Broadcast_Receiver " + stringSet.size());
                             }else {
@@ -500,6 +539,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
+
             }
 
             @Override
@@ -644,6 +684,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        switch (resultCode)
+        {
+            case 205:
+
+                updateUI(this.walmartRecyclerView, sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>()), getApplicationContext());
+
+                break;
+
+            default:
+
+                break;
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -656,5 +717,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void updateUI(RecyclerView recyclerView, Set<String> resultSet, Context context) {
+
+        WTSearch.Items[] items =  WTItems.mergeItems(resultSet);
+
+       // WalmartAdapter walmartAdapter = new WalmartAdapter();
+
+       // WalmartAdapter.WTAdapter wtAdapter = walmartAdapter.getAdapter(items, context);
+
+        WTSearchUpdateUI wtSearchUpdateUI = new WTSearchUpdateUI.Builder().items(items).context(context).recyclerView(recyclerView).build();
+
+
     }
 }

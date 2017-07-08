@@ -2,17 +2,25 @@ package co.uglytruth.lindy.Webservice;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import co.uglytruth.lindy.Webservice.connection.WebserviceConnection;
 import co.uglytruth.lindy.Webservice.result.WebserviceResult;
 import co.uglytruth.lindy.Webservice.type.WebserviceCollectionType;
 import co.uglytruth.lindy.Webservice.type.WebserviceExecuteType;
+import co.uglytruth.lindy.walmart.WTSearch;
+import co.uglytruth.lindy.walmart.key.WTKeys;
+import co.uglytruth.lindy.walmart.response.WTSearchResponse;
+import co.uglytruth.lindy.walmart.service.WTSearchAddService;
 
 
 /**
@@ -187,13 +195,48 @@ public class WebserviceAsyncTask {
 
                         if (finalContext != null) {
 
+                            //Rewrite to save HashSet
+
                             Intent intent = new Intent("Search_BroadCast");
 
                             Log.v("Scroll down", " webservice "  + aResult.getResult());
 
                             intent.putExtra("search", aResult.getResult());
 
+                            WTSearch wtSearch = WTSearchResponse.getResults(aResult.getResult());
+
+                            Log.v("WTSearchAddServiceW", " webservice "  + wtSearch.start);
+
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(finalContext);
+
+                            Set<String> searchSet = preferences.getStringSet(WTKeys.search, new HashSet<String>());
+
+
+                            searchSet.add(aResult.getResult());
+
+
+                            SharedPreferences.Editor editor = preferences.edit();
+
+                            editor.putStringSet(WTKeys.searchJsonResults, searchSet);
+
+                            editor.putString(WTKeys.currentStartKey, wtSearch.start);
+
+                            editor.commit();
+
+
+
+
                             LocalBroadcastManager.getInstance(finalContext).sendBroadcast(intent);
+
+
+
+                            /*
+                            Intent intent = new Intent(finalContext, WTSearchAddService.class);
+
+                            finalContext.startService(intent);
+                            */
+
+
 
                         }
 

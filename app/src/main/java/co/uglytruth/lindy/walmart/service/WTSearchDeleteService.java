@@ -34,7 +34,7 @@ public class WTSearchDeleteService extends IntentService {
         if (set.size() > 0)
         {
 
-           set.remove(currentStartInt + 1);
+           set.remove(currentStartInt);
 
            SharedPreferences.Editor editor = preferences.edit();
 

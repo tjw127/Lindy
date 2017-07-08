@@ -138,5 +138,7 @@ public class WTSearchUpdateUI implements Runnable {
         WalmartAdapter.WTAdapter wtAdapter = adapter.getAdapter(this.items, this.context);
 
         this.recyclerView.setAdapter(wtAdapter);
+
+
     }
 }

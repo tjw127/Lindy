@@ -23,6 +23,8 @@ public class WalmartUpdateUICallback extends ResultReceiver implements WalmartCa
     @Override
     protected void onReceiveResult(int resultCode, Bundle resultData) {
         super.onReceiveResult(resultCode, resultData);
+
+
     }
 
     @Override

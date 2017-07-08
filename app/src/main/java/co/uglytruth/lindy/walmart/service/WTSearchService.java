@@ -48,9 +48,13 @@ public class WTSearchService extends IntentService {
 
     private Set<String> searchJsonResult;
 
+    private Set<String> startSet;
+
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
+
+        Log.v("WTSearchAddService2", " " + intent.getStringExtra(WTKeys.search));
 
         String search = intent.getStringExtra(WTKeys.search);
 
@@ -70,21 +74,33 @@ public class WTSearchService extends IntentService {
 
             Integer endRange = new Integer(wtSearch.numItems);
 
+            startSet = new HashSet<String>();
+
+            startSet.add(startRange.toString());
+
 
 
 
 
             searchJsonResult.add(search);
 
-            editor.putStringSet(WTKeys.searchJsonResults, searchJsonResult);
+            editor.putStringSet(WTKeys.startKey, startSet);
+
+            //editor.putStringSet(WTKeys.searchJsonResults, searchJsonResult);
+
+            editor.putString(WTKeys.currentStartKey, wtSearch.start);
 
             editor.commit();
+
+            Log.v("WTSearchAddService2", " " + wtSearch.start);
 
 
 
         }else{
 
             Set<String> searchJsonResultsSaved = sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>());
+
+            Set<String> startSetString = sharedPreferences.getStringSet(WTKeys.startKey, new HashSet<String>());
 
             if (searchJsonResultsSaved.size() != 0)
             {
@@ -105,9 +121,18 @@ public class WTSearchService extends IntentService {
 
                 if (startEqualFlag != 1)
                 {
+                    WTSearch searchResponse = WTSearchResponse.getResults(search);
+
                     searchJsonResultsSaved.add(search);
 
+                    startSetString.add(searchResponse.start);
+
+
                     Log.v("SearchJsonResultsSaved", " " + searchJsonResultsSaved.size());
+
+                    editor.putStringSet(WTKeys.startKey, startSetString);
+
+                    editor.putString(WTKeys.currentStartKey, searchResponse.start);
 
                     editor.putStringSet(WTKeys.searchJsonResults, searchJsonResultsSaved);
 

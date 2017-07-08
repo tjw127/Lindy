@@ -43,8 +43,16 @@ public class WTItems {
 
             }
 
+
         }
 
-        return (WTSearch.Items[]) itemsList.toArray();
+        WTSearch.Items[] items = new WTSearch.Items[itemsList.size()];
+
+
+        for (int j = 0; j < itemsList.size(); j++)
+        {
+            items[j] = itemsList.get(j);
+        }
+        return items;
     }
 }

@@ -7,9 +7,13 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import co.uglytruth.lindy.Webservice.Webservice;
+import co.uglytruth.lindy.Webservice.test.WebserviceTestTwo;
 import co.uglytruth.lindy.Webservice.type.WebserviceExecuteType;
+import co.uglytruth.lindy.walmart.WalmartUrl;
 import co.uglytruth.lindy.walmart.collections.WTSearchCollection;
 import co.uglytruth.lindy.walmart.key.WTKeys;
+import co.uglytruth.lindy.walmart.params.WTSearchParams;
 
 /**
  * Created by tjw127 on 7/2/17.
@@ -37,9 +41,12 @@ public class WTSearchAddService extends IntentService{
     protected void onHandleIntent(@Nullable Intent intent) {
 
 
-        currentStartInt = intent.getIntExtra("currentStartInt", 0);
+        currentStartInt = intent.getIntExtra(WTKeys.currentStartInt, 0);
 
-        Log.v("WTSearchAddService", " execute " + currentStartInt);
+
+
+
+
 
 
 
@@ -47,19 +54,51 @@ public class WTSearchAddService extends IntentService{
 
         final String c = preferences.getString(WTKeys.taxonomy, "");
 
-        currentStartInt++;
 
-        final Integer start = new Integer(currentStartInt);
 
-        WTSearchCollection search = new WTSearchCollection.Builder()
-                .q("women")
-                .c(c)
-                .s(start.toString())
-                .n("25")
-                .context(getApplicationContext())
-                .executeType(WebserviceExecuteType.EXECUTE_PARAMS)
-                .walmartUrl()
-                .requestProperty()
-                .build();
+
+
+
+        if (currentStartInt > 0) {
+
+            currentStartInt++;
+
+             Integer start = new Integer(currentStartInt);
+
+            Log.v("WTSearchAddService1", " " + start.toString());
+
+
+
+            WTSearchParams params = new WTSearchParams.Builder().query("women").categoryId(c).start(start.toString())
+                    .numItems("25").build();
+
+            WalmartUrl walmartUrl = new WalmartUrl.Builder().wtsearch().build();
+
+            WebserviceTestTwo webserviceTestTwo = new WebserviceTestTwo();
+
+            try {
+                Log.v("WTSearchAddService3", " " + walmartUrl.url + "?" + params.parameters);
+
+                webserviceTestTwo.getURL(walmartUrl.url + "?" + params.parameters);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+           /*
+
+            WTSearchCollection search = new WTSearchCollection.Builder()
+                    .q("women")
+                    .c(c)
+                    .s(start.toString())
+                    .n("25")
+                    .context(getApplicationContext())
+                    .executeType(WebserviceExecuteType.EXECUTE_PARAMS)
+                    .walmartUrl()
+                    .requestProperty()
+                    .build();
+
+
+                    */
+
+        }
     }
 }

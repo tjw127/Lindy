@@ -15,4 +15,12 @@ public class WTKeys {
     public final static String taxonomyIntent = "taxonomy";
 
     public final static String searchJsonResults = "searchJsonResults";
+
+    public final static String currentStartInt = "currentStartInt";
+
+    public final static String Delete_Search_Broadcast_Receiver = "Delete_Search_Broadcast_Receiver";
+
+    public final static String startKey = "start";
+
+    public final static String currentStartKey = "currentStart";
 }
