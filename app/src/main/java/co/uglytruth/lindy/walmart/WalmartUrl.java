@@ -42,7 +42,7 @@ public class WalmartUrl {
 
         public Builder taxonomy()
         {
-            this.walmartUrl += "/taxonomy";
+            this.walmartUrl += "/wttaxonomy";
 
             return this;
         }

@@ -6,7 +6,9 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="co.uglytruth.lindy.MainActivity"
+    android:background="@drawable/foxybg"
     tools:showIn="@layout/activity_main">
+
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/walmartRecyclerView"

@@ -69,7 +69,7 @@ public class WTSearchAddService extends IntentService{
 
 
 
-            WTSearchParams params = new WTSearchParams.Builder().query("women").categoryId(c).start(start.toString())
+            WTSearchParams params = new WTSearchParams.Builder().query("women lingerie".replace(" ", "%20")).categoryId(c).start(start.toString())
                     .numItems("25").build();
 
             WalmartUrl walmartUrl = new WalmartUrl.Builder().wtsearch().build();

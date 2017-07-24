@@ -295,6 +295,8 @@ public class MainActivity extends AppCompatActivity implements WTSearchUpdateUII
             //intent1.setPackage("co.uglytruth.lindy.MainActivity");
 
             updateUI(walmartRecyclerView, sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>()), getApplicationContext());
+
+            progressDialog.cancel();
             //MainActivity.this.setResult(WTActivityResultTags.WTSearch_Result_Status_OK.getRequestCode());
 
             //startActivityForResult(intent1, WTActivityResultTags.WTSearch_Result_Status_OK.getRequestCode());
@@ -623,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements WTSearchUpdateUII
                 editor.commit();
 
                 WTSearchCollection search = new WTSearchCollection.Builder()
-                        .q("women")
+                        .q("women lingerie".replace(" ", "%20"))
                         .c(catHashMap.get(WTKeys.clothing))
                         .n("25")
                         .context(context)
