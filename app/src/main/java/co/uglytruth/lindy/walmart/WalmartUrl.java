@@ -14,9 +14,10 @@ public class WalmartUrl {
 
         private String walmartUrl;
 
+
         public Builder ()
         {
-            walmartUrl = Base.baseUrl;
+            walmartUrl = Base.walmart;
         }
 
         public Builder productLookUp()
@@ -28,21 +29,21 @@ public class WalmartUrl {
 
         public Builder itemSearch()
         {
-            this.walmartUrl += "/itemsearch";
+            this.walmartUrl += "items";
 
             return this;
         }
 
         public Builder wtsearch()
         {
-            this.walmartUrl += "/wtsearch";
+            this.walmartUrl += "search";
 
             return this;
         }
 
         public Builder taxonomy()
         {
-            this.walmartUrl += "/wttaxonomy";
+            this.walmartUrl += "taxonomy";
 
             return this;
         }

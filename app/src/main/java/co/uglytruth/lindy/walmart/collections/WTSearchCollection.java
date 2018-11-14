@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import co.uglytruth.lindy.Webservice.WebserviceAsyncTask;
 import co.uglytruth.lindy.Webservice.contenttype.ContentType;
 import co.uglytruth.lindy.Webservice.requestproperty.RequestProperty;
@@ -12,10 +14,17 @@ import co.uglytruth.lindy.Webservice.test.WebserviceTest;
 import co.uglytruth.lindy.Webservice.type.WebserviceCollectionType;
 import co.uglytruth.lindy.Webservice.type.WebserviceExecuteType;
 import co.uglytruth.lindy.Webservice.type.WebserviceType;
+import co.uglytruth.lindy.base.Base;
 import co.uglytruth.lindy.walmart.WTSearch;
+import co.uglytruth.lindy.walmart.WalmartRetrofitService;
 import co.uglytruth.lindy.walmart.WalmartUrl;
 import co.uglytruth.lindy.walmart.params.WTSearchParams;
 import co.uglytruth.lindy.walmart.response.WTSearchResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by tjw127 on 6/21/17.
@@ -389,6 +398,36 @@ public class WTSearchCollection {
             WebserviceAsyncTask.Builder webServiceBuilder = new WebserviceAsyncTask.Builder();
 
             webServiceBuilder.url(this.walmartUrl.url + "?" + params.parameters);
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(Base.walmart)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            WalmartRetrofitService walmartRetrofitService = retrofit.create(WalmartRetrofitService.class);
+
+           Call<WTSearch> search = walmartRetrofitService.getSearchData();
+
+           search.enqueue(new Callback<WTSearch>() {
+               @Override
+               public void onResponse(Call<WTSearch> call, Response<WTSearch> response) {
+
+                   if (response.isSuccessful())
+                   {
+                       WTSearch wtSearch = response.body();
+
+                       Log.v("RetrofitSearch", " " + wtSearch.numItems);
+                   }else {
+
+                       Log.v("RetrofitSearch", " Failed");
+                   }
+               }
+
+               @Override
+               public void onFailure(Call<WTSearch> call, Throwable t) {
+
+               }
+           });
 
 
             if (this.requestProperty.requestPropertyMap != null)

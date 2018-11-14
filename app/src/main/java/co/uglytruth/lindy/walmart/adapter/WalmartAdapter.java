@@ -91,7 +91,7 @@ public class WalmartAdapter {
             }
 
             //holder.walmartBuyNowButton.se
-            holder.walmartBuyNowButton.addItem(walmartItem, qualityInteger.intValue());
+//            holder.walmartBuyNowButton.addItem(walmartItem, qualityInteger.intValue());
 
             if (qualityInteger.intValue() == 0) {
 
@@ -106,10 +106,8 @@ public class WalmartAdapter {
                 holder.walmartPriceTextView.setText("$" + String.format("%.2f", itemFloat.floatValue()));
             }
 
+            Picasso.get().load(item.largeImage).into(holder.walmartImageView);
 
-
-            Picasso.with(context).load(item.largeImage)
-                    .into(holder.walmartImageView);
         }
 
         @Override

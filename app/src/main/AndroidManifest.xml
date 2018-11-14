@@ -3,7 +3,14 @@
     package="co.uglytruth.lindy">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -13,19 +20,35 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <meta-data android:name="com.walmartlabs.PublisherID" android:value="@string/walmart_publisher_id"/>
+        <!--<service android:name=".messages.MyAndroidFirebaseInstanceIdService">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.firebase.INSTANCE_ID_EVENT" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
+        <!--<service android:name=".messages.MyFCMMessageService">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.firebase.MESSAGING_EVENT" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
-        <service android:name=".walmart.service.WTSearchService" android:exported="false" />
+        <meta-data
+            android:name="com.walmartlabs.PublisherID"
+            android:value="@string/walmart_publisher_id" />
 
-        <service android:name=".walmart.service.WTSearchAddService" android:exported="false" />
+        <service
+            android:name=".walmart.service.WTSearchService"
+            android:exported="false" />
+        <service
+            android:name=".walmart.service.WTSearchAddService"
+            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
-                <action android:name="co.uglytruth.lindy.MainActivity" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -38,6 +61,73 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="co.uglytruth.lindy.MainActivity" />
         </activity>
+        <activity
+            android:name="com.mopub.mobileads.MoPubActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name="com.mopub.mobileads.MraidActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name="com.mopub.common.MoPubBrowser"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name="com.mopub.mobileads.MraidVideoPlayerActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity
+            android:name=".LindyHomeActivity"
+            android:label="@string/title_activity_lindy_home"
+            android:theme="@style/AppTheme.NoActionBar">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+                <!--<action android:name="co.uglytruth.lindy.MainActivity" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity
+            android:name=".ebates.EbatesActivity"
+            android:label="@string/title_activity_ebates"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.uglytruth.lindy.LindyHomeActivity" />
+        </activity>
+        <activity
+            android:name=".amazon.AmazonActivity"
+            android:label="@string/title_activity_amazon"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.uglytruth.lindy.LindyHomeActivity" />
+        </activity>
+        <activity
+            android:name=".KindleActivity"
+            android:label="@string/title_activity_kindle"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.uglytruth.lindy.LindyHomeActivity" />
+        </activity>
+        <activity
+            android:name=".BCBGActivity"
+            android:label="@string/title_activity_bcbg"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.uglytruth.lindy.LindyHomeActivity" />
+        </activity>
+        <activity
+            android:name=".JAEActivity"
+            android:label="@string/title_activity_jae"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="co.uglytruth.lindy.LindyHomeActivity" />
+        </activity>
+        <activity
+            android:name=".Main2Activity"
+            android:label="@string/title_activity_main2"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

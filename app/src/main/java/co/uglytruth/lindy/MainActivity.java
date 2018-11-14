@@ -2,6 +2,7 @@ package co.uglytruth.lindy;
 
 import android.app.IntentService;
 import android.app.ProgressDialog;
+import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,7 +25,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import org.json.JSONException;
-import com.walmartlabs.tofa.*;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import co.uglytruth.lindy.Webservice.type.WebserviceExecuteType;
 import co.uglytruth.lindy.walmart.WTSearch;
 import co.uglytruth.lindy.walmart.WTTaxonomy;
+import co.uglytruth.lindy.walmart.Walmart;
 import co.uglytruth.lindy.walmart.adapter.WalmartAdapter;
 import co.uglytruth.lindy.walmart.collections.WTSearchCollection;
 import co.uglytruth.lindy.walmart.collections.WTTaxonomyCollection;
@@ -41,6 +43,7 @@ import co.uglytruth.lindy.walmart.items.WTItems;
 import co.uglytruth.lindy.walmart.key.WTKeys;
 import co.uglytruth.lindy.walmart.response.WTSearchResponse;
 import co.uglytruth.lindy.walmart.response.WTTaxonomyResponse;
+import co.uglytruth.lindy.walmart.rest_api.WalmartRestAPI;
 import co.uglytruth.lindy.walmart.service.WTSearchAddService;
 import co.uglytruth.lindy.walmart.service.WTSearchService;
 import co.uglytruth.lindy.walmart.start.WTStartTracking;
@@ -48,547 +51,22 @@ import co.uglytruth.lindy.walmart.tag.WTActivityResultTags;
 import co.uglytruth.lindy.walmart.update.WTSearchUpdateUI;
 import co.uglytruth.lindy.walmart.update.WTSearchUpdateUIInterface;
 
-public class MainActivity extends AppCompatActivity implements WTSearchUpdateUIInterface{
+public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView walmartRecyclerView;
-
-    private Context context;
-
-    private ProgressDialog progressDialog;
-
-    private SharedPreferences sharedPreferences;
-
-    private boolean loading = false;
-
-    private WTSearch wtSearch;
-
-    private int currentStartInt = 0;
-
-    private Integer currentKey;
-
-    private HashMap<Integer, WTStartTracking> startTrackingHashMap;
-
-    private HashMap<Integer, String> jsonTracking;
-
-    private Set<String> searchJsonResult;
-
-    private WTSearchService wtSearchService;
-
-    private HashMap<Integer, Integer> itemsState; //keep track of when to trigger delete or insert new items
-
-    private Intent wtSearchServiceIntent;
-
-    private Intent wtSearchAddServiceIntent;
-
-    private Intent wtDeleteServiceIntent;
-
-    private int visibleChildCount, pastVisibleChildCount, totalChildCount, lastVisibleChildPosition, completeVisibleChildFirstPosition, completeVisibleChildLastPosition;
-
-    private BroadcastReceiver taxonomyBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            String taxonomy = intent.getStringExtra(WTKeys.taxonomyIntent);
-
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-            SharedPreferences.Editor editor = preferences.edit();
-
-            editor.putString(WTKeys.taxonomyIntent, taxonomy);
-
-            editor.commit();
-
-            if (taxonomy.length() > 0) {
-
-                getSearchRecyclerView(taxonomy);
-
-            }
-
-        }
-    };
-
-    private BroadcastReceiver deleteSearchBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            Set<Integer> keySet = startTrackingHashMap.keySet();
-
-            for (Integer key : keySet)
-            {
-                WTStartTracking startTracking = startTrackingHashMap.get(key);
-
-                int startRange = startTracking.getStartRange().intValue();
-
-                int endRange = startTracking.getEndRange().intValue();
-
-                if ((startRange <= currentKey.intValue()) || (endRange >= currentKey.intValue()))
-                {
-                    int nextKey = key.intValue() + 1;
-
-                    startTrackingHashMap.remove(new Integer(nextKey));
-                }
-            }
-
-        }
-    };
-
-    private BroadcastReceiver addSearchBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context aContext, Intent intent) {
-
-
-
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-            final String c = preferences.getString(WTKeys.taxonomy, "");
-
-            currentStartInt++;
-
-            final Integer start = new Integer(currentStartInt);
-
-
-
-
-
-            wtSearchServiceIntent.putExtra(WTKeys.currentStartInt, currentStartInt);
-
-            context.startService(wtSearchServiceIntent);
-
-            if (c.length() > 0) {
-
-                Log.v("Scroll down", " " + currentStartInt);
-
-
-
-            }
-
-        }
-    };
-    private BroadcastReceiver searchBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            /*
-
-            String search = intent.getStringExtra(WTKeys.search);
-
-            wtSearch = WTSearchResponse.getResults(search);
-
-            WalmartAdapter walmartAdapter = new WalmartAdapter();
-
-            Integer startInt = new Integer(wtSearch.start);
-
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-
-            if (startInt.intValue() == 1) {
-
-                Integer startRange = new Integer(1);
-
-                Integer endRange = new Integer(wtSearch.numItems);
-
-                WTStartTracking startTracking = new WTStartTracking();
-
-                startTracking.setEndRange(endRange.intValue());
-
-                startTracking.setStartRange(startRange.intValue());
-
-                startTracking.setJson(search);
-
-                startTrackingHashMap.put(startInt, startTracking);
-
-                searchJsonResult.add(search);
-
-                editor.putStringSet(WTKeys.searchJsonResults, searchJsonResult);
-
-                editor.commit();
-
-
-
-            }else{
-
-              Set<String> searchJsonResultsSaved = sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>());
-
-              if (searchJsonResultsSaved.size() != 0)
-              {
-                  int startEqualFlag = 0;
-
-                  for (int i = 0; i < searchJsonResultsSaved.size(); i++)
-                  {
-
-                     WTSearch searchResponse = WTSearchResponse.getResults(searchJsonResultsSaved.toArray()[i].toString());
-
-                     Integer startSaved = new Integer(searchResponse.start);
-
-                     if (startInt.intValue() == startSaved.intValue())
-                     {
-                         startEqualFlag = 1;
-                     }
-                  }
-
-                  if (startEqualFlag != 1)
-                  {
-                      searchJsonResultsSaved.add(search);
-
-                      Log.v("SearchJsonResultsSaved", " " + searchJsonResultsSaved.size());
-
-                      editor.putStringSet(WTKeys.searchJsonResults, searchJsonResultsSaved);
-
-                      editor.commit();
-                  }
-              }
-
-              Set<Integer> set = startTrackingHashMap.keySet();
-
-
-              for (Object startObject : set.toArray())
-              {
-                  Integer startValueInteger = (Integer)startObject;
-
-                  if ((startInt.intValue() - 1) == startValueInteger.intValue())
-                  {
-                      int startRangeInt = startTrackingHashMap.get(startValueInteger).getEndRange().intValue();
-
-                      int endRangeInt = startRangeInt + new Integer(wtSearch.numItems).intValue();
-
-
-                      WTStartTracking startTracking = new WTStartTracking();
-
-                      startTracking.setStartRange(startRangeInt);
-
-                      startTracking.setEndRange(endRangeInt);
-
-                      startTracking.setJson(search);
-
-
-                      startTrackingHashMap.put(startInt.intValue(), startTracking);
-
-                  }
-              }
-
-            }
-
-
-
-            Set<String> jsonSet = sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>());
-
-            Log.v("Scroll down", " jsonSet " + jsonSet.size());
-
-            WTSearch.Items[] itemsArray;
-            if (jsonSet.size() > 1) {
-
-                itemsArray = WTItems.mergeItems(jsonSet);
-
-            }else {
-
-                itemsArray = wtSearch.items;
-            }
-            WalmartAdapter.WTAdapter wtAdapter = walmartAdapter.getAdapter(itemsArray, context);
-
-            walmartRecyclerView.setAdapter(wtAdapter);
-            progressDialog.cancel();
-
-            */
-           // Intent intent1 = new Intent("co.uglytruth.lindy.MainActivity");
-
-            //intent1.setPackage("co.uglytruth.lindy.MainActivity");
-
-            updateUI(walmartRecyclerView, sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>()), getApplicationContext());
-
-            progressDialog.cancel();
-            //MainActivity.this.setResult(WTActivityResultTags.WTSearch_Result_Status_OK.getRequestCode());
-
-            //startActivityForResult(intent1, WTActivityResultTags.WTSearch_Result_Status_OK.getRequestCode());
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WalmartSDK.initialize(this);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
 
-        walmartRecyclerView = (RecyclerView)findViewById(R.id.walmartRecyclerView);
 
-        walmartRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
 
-        walmartRecyclerView.setHasFixedSize(false);
 
-        context = this;
 
-        progressDialog = new ProgressDialog(this);
-
-        progressDialog.setMessage("Loading Items");
-
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        itemsState = new HashMap<Integer, Integer>();
-
-        startTrackingHashMap = new HashMap<Integer, WTStartTracking>();
-
-        jsonTracking = new HashMap<Integer, String>();
-
-        searchJsonResult = new HashSet<String>();
-
-        wtSearchService = new WTSearchService();
-
-
-
-
-        wtSearchServiceIntent = new Intent(this, WTSearchService.class);
-
-        wtSearchAddServiceIntent = new Intent(this, WTSearchAddService.class);
-
-
-
-
-
-        /*
-        String json = WTSearchJsonResultsMap.convertSearchResultsHashmapToString(testMap);
-
-        HashMap<Integer, String> testMapOne = WTSearchJsonResultsMap.convertJsonToHashmap(json);
-
-
-        Log.v("Test", " " + testMapOne.get("1"));
-
-        */
-        /*
-       for (Set<Integer> one : testMapOne.keySet())
-       {
-           String test = testMapOne.get(one);
-
-           Log.v("Test", " " + test);
-       }
-       */
-
-        walmartRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                //super.onScrolled(recyclerView, dx, dy);
-
-               GridLayoutManager manager = (GridLayoutManager) recyclerView.getLayoutManager();
-
-                visibleChildCount = manager.getChildCount();
-
-                totalChildCount = manager.getItemCount();
-
-                pastVisibleChildCount = manager.findFirstVisibleItemPosition();
-
-                lastVisibleChildPosition = manager.findLastVisibleItemPosition();
-
-                completeVisibleChildFirstPosition = manager.findFirstCompletelyVisibleItemPosition();
-
-                completeVisibleChildLastPosition = manager.findLastCompletelyVisibleItemPosition();
-
-
-
-
-                Log.v("visibleChildCount", " " + visibleChildCount);
-
-                Log.v("totalChildCount", " " + totalChildCount);
-
-                Log.v("pastVisibleChildCount", " " + pastVisibleChildCount);
-
-
-
-                Integer lastChild = new Integer(pastVisibleChildCount);
-
-                //Integer start = new Integer(wtSearch.start);
-
-               // currentStartInt = start.intValue();
-
-                int itemPosition = (pastVisibleChildCount + 1);
-
-                //if ()
-                if (dy > 0)
-                {
-                    //Scroll down
-                    //Log.v("Scroll down ", " item " + pastVisibleChildCount);
-                    if (pastVisibleChildCount > 0) {
-
-                        if ((lastVisibleChildPosition % 6) == 0)
-                        {
-
-
-
-                            Log.v("Scroll down ", " load view " + pastVisibleChildCount);
-                        }
-
-                        if ((pastVisibleChildCount % 6) == 0) {
-
-                            if (!itemsState.containsKey(lastChild)) {
-
-                               // int startInt = start.intValue();
-
-                                //int newStart = startInt++;
-
-                               // itemsState.put(lastChild, new Integer(newStart));
-
-                                //Insert new (Search Collection) items
-
-                                //Intent intent = new Intent("Add_Search_Broadcast_Receiver");
-
-                                Set<String> stringSet =  sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>());
-
-                                String currentKey = sharedPreferences.getString(WTKeys.currentStartKey, "");
-
-
-                                if (stringSet.size() < 2) {
-
-                                    Intent intent = new Intent(context, WTSearchAddService.class);
-
-                                    Log.v("WTSearchAddService", " " + currentKey);
-
-                                    if (currentKey.length() > 0) {
-
-                                        intent.putExtra("currentStartInt", new Integer(currentKey).intValue());
-
-                                    }
-                                    //context.sendBroadcast(intent);
-
-                                    context.startService(intent);
-
-                                }
-
-                                //LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-
-
-
-                                Log.v("Scroll down ", " Add_Search_Broadcast_Receiver " + stringSet.size());
-                            }else {
-
-                                //Log.v("Scroll down ", " itemsState test " + pastVisibleChildCount);
-                            }
-
-                            Set<Integer> keys = itemsState.keySet();
-
-                            for (int k = 0; k < keys.size(); k++)
-                            {
-                                Integer key = (Integer) keys.toArray()[k];
-
-                                //Log.v("Scroll down", " key " + key.intValue());
-
-                                if ((key.intValue() % 12) == 0)
-                                {
-                                   // Log.v("Scroll down", " key view " + key.intValue());
-
-                                    //Delete the previous batch of data for example 1 through 25 if I have 26 through 50 items.
-
-                                   Intent intent = new Intent("Delete_Search_Broadcast_Receiver");
-
-                                   //context.sendBroadcast(intent);
-                                }
-                            }
-
-
-
-
-                        }
-                    }
-
-
-                }else if (dy < 0)
-                {
-                    //Log.v("Scroll up", " item " + itemPosition);
-
-                    if (pastVisibleChildCount > 0) {
-                        //Log.v("Scroll up ", " Delete view " + lastVisibleChildPosition);
-                        if ((lastVisibleChildPosition % 2) == 0)
-                        {
-
-                        }
-
-                       // Log.v("Scroll up", " Delete " + pastVisibleChildCount);
-
-                        if ((pastVisibleChildCount % 6) == 0)
-                        {
-
-                            if (!itemsState.containsKey(lastChild)) {
-
-                                Log.v("Scroll up ", " load Fine " + pastVisibleChildCount);
-                            }else {
-
-                                //Delete anything not with range the for start 1 range is set to 25 items (out of range greater 25 items)
-
-                                itemsState.remove(lastChild);
-                                Log.v("Scroll up ", " load dataF " + pastVisibleChildCount);
-                            }
-                        }
-
-                    }
-                    //Scroll up
-                    if (totalChildCount > 10)
-                    {
-                        if (!loading) {
-
-                            if (itemPosition == 1) {
-                                //Delete Any Items > 10
-                            }
-
-
-
-                        }
-                    }
-                }
-
-            }
-
-            @Override
-            public int hashCode() {
-                return super.hashCode();
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                return super.equals(obj);
-            }
-
-            @Override
-            protected Object clone() throws CloneNotSupportedException {
-                return super.clone();
-            }
-
-            @Override
-            public String toString() {
-                return super.toString();
-            }
-
-
-
-            @Override
-            protected void finalize() throws Throwable {
-                super.finalize();
-            }
-        });
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-        String taxonomy = sharedPreferences.getString(WTKeys.taxonomyIntent, "");
-
-        if (taxonomy.length() > 0)
-        {
-            progressDialog.show();
-            getSearchRecyclerView(taxonomy);
-        }else {
-
-            try {
-                progressDialog.show();
-                WTTaxonomyCollection.getCategories(context);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -602,44 +80,26 @@ public class MainActivity extends AppCompatActivity implements WTSearchUpdateUII
         });
     }
 
-    private void getSearchRecyclerView(String taxonomy)
-    {
+    public void walmart_search(String q){
+
+        Walmart.RequestBuilder requestBuilder = new Walmart.RequestBuilder();
+
+        Walmart.EndpointBuilder endpointBuilder = new Walmart.EndpointBuilder();
+
+        Walmart.ArgumentsBuilder argumentsBuilder = new Walmart.ArgumentsBuilder();
+
+        argumentsBuilder.query(q);
+
+        WalmartRestAPI.Search search = new WalmartRestAPI.Search(endpointBuilder, argumentsBuilder, requestBuilder);
+
+        String result = (String)search.getResults();
 
 
-        if (taxonomy.length() > 0)
-        {
-            try {
-                WTTaxonomy.Categories [] categories = WTTaxonomyResponse.getResult(taxonomy);
 
-                HashMap<String, String> catHashMap = new HashMap<String, String>();
+        Log.d("WalmartSearch 1 ", result);
 
-                for (WTTaxonomy.Categories category : categories)
-                {
-                    catHashMap.put(category.name, category.id);
-                }
-
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-
-                editor.putString(WTKeys.taxonomy, catHashMap.get(WTKeys.clothing));
-
-                editor.commit();
-
-                WTSearchCollection search = new WTSearchCollection.Builder()
-                        .q("women lingerie".replace(" ", "%20"))
-                        .c(catHashMap.get(WTKeys.clothing))
-                        .n("25")
-                        .context(context)
-                        .executeType(WebserviceExecuteType.EXECUTE_PARAMS)
-                        .walmartUrl()
-                        .requestProperty()
-                        .build();
-
-            }catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-        }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -651,14 +111,8 @@ public class MainActivity extends AppCompatActivity implements WTSearchUpdateUII
     @Override
     protected void onStart() {
         super.onStart();
+        walmart_search("women");
 
-        LocalBroadcastManager.getInstance(context).registerReceiver(searchBroadcastReceiver, new IntentFilter("Search_BroadCast"));
-
-        LocalBroadcastManager.getInstance(context).registerReceiver(taxonomyBroadcastReceiver, new IntentFilter("Taxonomy_BroadCast"));
-
-        LocalBroadcastManager.getInstance(context).registerReceiver(addSearchBroadcastReceiver, new IntentFilter("Add_Search_Broadcast_Receiver"));
-
-        LocalBroadcastManager.getInstance(context).registerReceiver(deleteSearchBroadcastReceiver, new IntentFilter("Delete_Search_Broadcast_Receiver"));
 
     }
 
@@ -666,10 +120,7 @@ public class MainActivity extends AppCompatActivity implements WTSearchUpdateUII
     protected void onStop() {
         super.onStop();
 
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(searchBroadcastReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(taxonomyBroadcastReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(addSearchBroadcastReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(deleteSearchBroadcastReceiver);
+
 
 
     }
@@ -678,33 +129,11 @@ public class MainActivity extends AppCompatActivity implements WTSearchUpdateUII
     protected void onDestroy() {
         super.onDestroy();
 
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(searchBroadcastReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(taxonomyBroadcastReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(addSearchBroadcastReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(deleteSearchBroadcastReceiver);
+
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        switch (resultCode)
-        {
-            case 205:
-
-                updateUI(this.walmartRecyclerView, sharedPreferences.getStringSet(WTKeys.searchJsonResults, new HashSet<String>()), getApplicationContext());
-
-                break;
-
-            default:
-
-                break;
-        }
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -721,17 +150,5 @@ public class MainActivity extends AppCompatActivity implements WTSearchUpdateUII
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void updateUI(RecyclerView recyclerView, Set<String> resultSet, Context context) {
 
-        WTSearch.Items[] items =  WTItems.mergeItems(resultSet);
-
-       // WalmartAdapter walmartAdapter = new WalmartAdapter();
-
-       // WalmartAdapter.WTAdapter wtAdapter = walmartAdapter.getAdapter(items, context);
-
-        WTSearchUpdateUI wtSearchUpdateUI = new WTSearchUpdateUI.Builder().items(items).context(context).recyclerView(recyclerView).build();
-
-
-    }
 }

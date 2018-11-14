@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.walmartlabs.tofa.WalmartBuyNowButton;
 
 import co.uglytruth.lindy.R;
+import co.uglytruth.lindy.walmart.button.ShoppingBuyButton;
 
 /**
  * Created by tjw127 on 6/24/17.
@@ -22,7 +23,7 @@ public class WalmartViewHolder extends RecyclerView.ViewHolder{
 
    // public ImageButton walmartImageButton;
 
-    public WalmartBuyNowButton walmartBuyNowButton;
+    public ShoppingBuyButton shoppingBuyButton;
 
     public WalmartViewHolder(View itemView) {
         super(itemView);
@@ -32,8 +33,8 @@ public class WalmartViewHolder extends RecyclerView.ViewHolder{
         //walmartImageButton = (ImageButton)itemView.findViewById(R.id.walmartImageButton);
         walmartPriceTextView = (TextView)itemView.findViewById(R.id.walmartPriceTextView);
 
-
-        walmartBuyNowButton = (WalmartBuyNowButton)itemView.findViewById(R.id.walmartBuyButton);
+        shoppingBuyButton = (ShoppingBuyButton)itemView.findViewById(R.id.shopping_buy_button);
+//        walmartBuyNowButton = (WalmartBuyNowButton)itemView.findViewById(R.id.walmartBuyButton);
 
 
     }

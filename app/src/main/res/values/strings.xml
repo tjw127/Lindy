@@ -3,4 +3,14 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_navigation">NavigationActivity</string>
     <string name="walmart_publisher_id">TYRkFi56cOk</string>
+    <string name="title_activity_lindy_home">Foxy Lou</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="title_activity_ebates">Ebates</string>
+    <string name="title_activity_amazon">Amazon</string>
+    <string name="title_activity_kindle">Kindle</string>
+    <string name="title_activity_bcbg">BCBG</string>
+    <string name="title_activity_jae">JAE</string>
+    <string name="title_activity_main2">Main2Activity</string>
 </resources>
