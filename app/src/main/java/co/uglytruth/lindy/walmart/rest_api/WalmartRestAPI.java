@@ -1,5 +1,6 @@
 package co.uglytruth.lindy.walmart.rest_api;
 
+import android.content.Context;
 import android.util.Log;
 
 import co.uglytruth.lindy.abstract_classes.WalmartRestApiTemplate;
@@ -13,12 +14,14 @@ public class WalmartRestAPI {
         private Walmart.ArgumentsBuilder argumentsBuilder;
         private Walmart.EndpointBuilder endpointBuilder;
         private Walmart.RequestBuilder requestBuilder;
+        private Context context;
 
         public Search(Walmart.EndpointBuilder endpointBuilder, Walmart.ArgumentsBuilder argumentsBuilder, Walmart.RequestBuilder requestBuilder){
 
             this.argumentsBuilder = argumentsBuilder;
             this.endpointBuilder = endpointBuilder;
             this.requestBuilder = requestBuilder;
+
 
         }
         @Override

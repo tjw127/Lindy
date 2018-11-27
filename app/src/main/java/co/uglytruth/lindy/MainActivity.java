@@ -1,55 +1,16 @@
 package co.uglytruth.lindy;
 
-import android.app.IntentService;
-import android.app.ProgressDialog;
-import android.content.AsyncQueryHandler;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
-import org.json.JSONException;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
-import co.uglytruth.lindy.Webservice.type.WebserviceExecuteType;
-import co.uglytruth.lindy.walmart.WTSearch;
-import co.uglytruth.lindy.walmart.WTTaxonomy;
 import co.uglytruth.lindy.walmart.Walmart;
-import co.uglytruth.lindy.walmart.adapter.WalmartAdapter;
-import co.uglytruth.lindy.walmart.collections.WTSearchCollection;
-import co.uglytruth.lindy.walmart.collections.WTTaxonomyCollection;
-import co.uglytruth.lindy.walmart.hashmap.WTSearchJsonResultsMap;
-import co.uglytruth.lindy.walmart.items.WTItems;
-import co.uglytruth.lindy.walmart.key.WTKeys;
-import co.uglytruth.lindy.walmart.response.WTSearchResponse;
-import co.uglytruth.lindy.walmart.response.WTTaxonomyResponse;
 import co.uglytruth.lindy.walmart.rest_api.WalmartRestAPI;
-import co.uglytruth.lindy.walmart.service.WTSearchAddService;
-import co.uglytruth.lindy.walmart.service.WTSearchService;
-import co.uglytruth.lindy.walmart.start.WTStartTracking;
-import co.uglytruth.lindy.walmart.tag.WTActivityResultTags;
-import co.uglytruth.lindy.walmart.update.WTSearchUpdateUI;
-import co.uglytruth.lindy.walmart.update.WTSearchUpdateUIInterface;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,9 +22,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
-
 
 
 
@@ -82,21 +40,29 @@ public class MainActivity extends AppCompatActivity {
 
     public void walmart_search(String q){
 
-        Walmart.RequestBuilder requestBuilder = new Walmart.RequestBuilder();
+        try {
 
-        Walmart.EndpointBuilder endpointBuilder = new Walmart.EndpointBuilder();
+            Walmart.RequestBuilder requestBuilder = new Walmart.RequestBuilder();
+//            requestBuilder.response(this);
 
-        Walmart.ArgumentsBuilder argumentsBuilder = new Walmart.ArgumentsBuilder();
+            Walmart.EndpointBuilder endpointBuilder = new Walmart.EndpointBuilder();
 
-        argumentsBuilder.query(q);
+            Walmart.ArgumentsBuilder argumentsBuilder = new Walmart.ArgumentsBuilder();
 
-        WalmartRestAPI.Search search = new WalmartRestAPI.Search(endpointBuilder, argumentsBuilder, requestBuilder);
+            argumentsBuilder.query(q);
 
-        String result = (String)search.getResults();
+            WalmartRestAPI.Search search = new WalmartRestAPI.Search(endpointBuilder, argumentsBuilder, requestBuilder);
+
+        }catch (Exception e){
+
+            e.printStackTrace();
+        }
+
+//        String result = (String)search.getResults();
 
 
 
-        Log.d("WalmartSearch 1 ", result);
+//        Log.d("WalmartSearch 1 ", result);
 
     }
 
@@ -149,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 
 
 }

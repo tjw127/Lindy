@@ -22,7 +22,7 @@ public class WTSearchUpdateUI implements Runnable {
 
     public static class Builder{
 
-        private WalmartAdapter.WTAdapter adapter;
+        private WalmartAdapter adapter;
 
         private RecyclerView recyclerView;
 
@@ -36,7 +36,7 @@ public class WTSearchUpdateUI implements Runnable {
 
         }
 
-        public Builder adapter(WalmartAdapter.WTAdapter aAdapter)
+        public Builder adapter(WalmartAdapter aAdapter)
         {
             this.adapter = aAdapter;
 
@@ -133,11 +133,10 @@ public class WTSearchUpdateUI implements Runnable {
     @Override
     public void run() {
 
-        WalmartAdapter adapter = new WalmartAdapter();
 
-        WalmartAdapter.WTAdapter wtAdapter = adapter.getAdapter(this.items, this.context);
+        WalmartAdapter walmartAdapter = new WalmartAdapter(this.items, this.context);
 
-        this.recyclerView.setAdapter(wtAdapter);
+        this.recyclerView.setAdapter(walmartAdapter);
 
 
     }

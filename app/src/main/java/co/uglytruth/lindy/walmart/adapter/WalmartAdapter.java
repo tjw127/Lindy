@@ -3,6 +3,7 @@ package co.uglytruth.lindy.walmart.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +27,7 @@ import co.uglytruth.lindy.walmart.tag.WalmartTags;
  * Created by tjw127 on 6/24/17.
  */
 
-public class WalmartAdapter {
+public class WalmartAdapter extends RecyclerView.Adapter<WalmartViewHolder>{
 
     private WTSearch search;
 
@@ -36,21 +37,16 @@ public class WalmartAdapter {
 
     WTSearch.Items[] items;
 
-
-    public WTAdapter getAdapter(WTSearch.Items[] aItems, Context aContext)
-    {
+    public WalmartAdapter(WTSearch.Items[] aItems, Context aContext){
         items = aItems;
 
         context = aContext;
 
-        WTAdapter wtAdapter = new WTAdapter();
-
-        return wtAdapter;
     }
-    public class WTAdapter extends RecyclerView.Adapter<WalmartViewHolder>{
 
-        @Override
-        public WalmartViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+    @Override
+    public WalmartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
             View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.walmart_view, parent, false);
 
@@ -66,7 +62,7 @@ public class WalmartAdapter {
         }
 
         @Override
-        public void onBindViewHolder(WalmartViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull WalmartViewHolder holder, int position) {
 
             id = position;
 
@@ -75,40 +71,44 @@ public class WalmartAdapter {
             WTSearch.Items item = items[position];
 
 
-            WalmartItem walmartItem = new WalmartItem(item.itemId, WalmartItemIdType.WALMART_ID);
+//            WalmartItem walmartItem = new WalmartItem(item.itemId, WalmartItemIdType.WALMART_ID);
 
 
             Integer qualityInteger = null;
 
             //items.stock.equals("Available")
 
-            if (item.availableOnline == true)
+            if (item.availableOnline)
             {
-                qualityInteger = new Integer(1);
+                qualityInteger = 1;
             }else {
 
-                qualityInteger = new Integer(0);
+                qualityInteger = 0;
             }
 
             //holder.walmartBuyNowButton.se
 //            holder.walmartBuyNowButton.addItem(walmartItem, qualityInteger.intValue());
 
-            if (qualityInteger.intValue() == 0) {
+            if (qualityInteger == 0) {
 
-                holder.walmartPriceTextView.setText("$" + "0.00");
+                String zero_dollars = "$0.00";
+                holder.walmartPriceTextView.setText(zero_dollars);
 
                 holder.walmartPriceTextView.setTextColor(Color.RED);
 
             }else {
 
-                Float itemFloat = new Float(item.salePrice);
+                Float itemFloat = Float.valueOf(item.salePrice);
 
-                holder.walmartPriceTextView.setText("$" + String.format("%.2f", itemFloat.floatValue()));
+                String price = "$" + String.format("%.2f", itemFloat.floatValue());
+
+                holder.walmartPriceTextView.setText(price);
             }
 
             Picasso.get().load(item.largeImage).into(holder.walmartImageView);
 
         }
+
 
         @Override
         public int getItemCount() {
@@ -121,5 +121,5 @@ public class WalmartAdapter {
             }
 
         }
-    }
+
 }

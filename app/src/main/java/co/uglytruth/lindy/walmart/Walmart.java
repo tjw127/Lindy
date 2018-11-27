@@ -2,10 +2,6 @@ package co.uglytruth.lindy.walmart;
 
 import android.util.Log;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,10 +11,6 @@ import java.util.TreeMap;
 import co.uglytruth.lindy.base.Base;
 import co.uglytruth.lindy.walmart.builder.Builder;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class Walmart {
 
@@ -33,11 +25,16 @@ public class Walmart {
                 = MediaType.parse("application/xml; charset=utf-8");
         private String url;
 
-        private OkHttpClient client;
+//        private OkHttpClient client;
+//
+//        private OkHttpAsyncTaskService okHttpAsyncTask;
+//
+//        private OkHttpAsyncTaskResponse response;
+
 
         public RequestBuilder(){
             Log.v("RequestBuilder", "Builder class");
-            client = new OkHttpClient();
+//            client = new OkHttpClient();
         }
 
         public RequestBuilder url(String url, String args){
@@ -49,6 +46,13 @@ public class Walmart {
             return this;
         }
 
+//        public RequestBuilder response(OkHttpAsyncTaskResponse okHttpAsyncTaskResponse){
+//
+//            this.response = okHttpAsyncTaskResponse;
+//
+//            return this;
+//        }
+
         public RequestBuilder url(String url){
 
             this.url = url;
@@ -58,21 +62,21 @@ public class Walmart {
         @Override
         public Object build() {
 
-
-            Request request = new Request.Builder()
-                    .url(url)
+            /*
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(url)
+                    .addConverterFactory(GsonConverterFactory.create())
                     .build();
-            Response response = null;
-            try {
-                response = client.newCall(request).execute();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                return response.body().string();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            Log.d("Walmart Retro", " " + retrofit.toString());
+
+            */
+
+
+//         okHttpAsyncTask = new OkHttpAsyncTaskService(this.url);
+//         okHttpAsyncTask.okHttpAsyncTaskResponse = this.response;
+//         okHttpAsyncTask.execute();
+
             return null;
         }
     }
